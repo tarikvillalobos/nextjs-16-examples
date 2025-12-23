@@ -2,13 +2,6 @@
 
 import * as React from "react"
 import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ArrowDownIcon, LoaderCircle } from "lucide-react"
 
@@ -89,14 +82,14 @@ export function TableInfiniteScroll() {
   )
 
   return (
-    <Card className="border-primary/10 bg-card/80 shadow-sm backdrop-blur">
-      <CardHeader className="gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <CardTitle>Tabela com paginação em scroll</CardTitle>
-          <CardDescription>
+          <h2 className="text-xl font-semibold">Tabela com paginação em scroll</h2>
+          <p className="text-muted-foreground text-sm">
             Role para carregar mais páginas de resultados. A tabela dispara o
             carregamento automaticamente ao se aproximar do fim da lista.
-          </CardDescription>
+          </p>
         </div>
         <div className="text-muted-foreground flex items-center gap-3 text-sm">
           <div className="rounded-lg border px-3 py-2">
@@ -107,97 +100,93 @@ export function TableInfiniteScroll() {
             {loadedPercentage}%
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div
-          ref={scrollRef}
-          className="max-h-[540px] overflow-auto rounded-xl border bg-card/60 shadow-inner"
-        >
-          <table className="min-w-full table-fixed text-sm">
-            <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur">
-              <tr className="border-b">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Cliente
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  País
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Nota fiscal
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Valor
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
-                  Emissão
-                </th>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="max-h-[560px] overflow-auto border-l border-t bg-card/40"
+      >
+        <table className="min-w-full table-fixed text-sm">
+          <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur">
+            <tr className="border-b">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Cliente
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                País
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Nota fiscal
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Valor
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Status
+              </th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
+                Emissão
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {rows.map((row) => (
+              <tr key={row.id} className="hover:bg-muted/30 transition-colors">
+                <td className="px-4 py-3">
+                  <div className="font-medium leading-tight">
+                    {row.customer}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {row.email}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {row.country}
+                </td>
+                <td className="px-4 py-3">{row.invoice}</td>
+                <td className="px-4 py-3 font-semibold">
+                  {formatter.format(row.total)}
+                </td>
+                <td className="px-4 py-3">
+                  <Badge
+                    variant="outline"
+                    className={statusTone[row.status]}
+                  >
+                    {row.status}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {row.issuedAt}
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y">
-              {rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <div className="font-medium leading-tight">
-                      {row.customer}
-                    </div>
-                    <div className="text-muted-foreground text-xs">
-                      {row.email}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {row.country}
-                  </td>
-                  <td className="px-4 py-3">{row.invoice}</td>
-                  <td className="px-4 py-3 font-semibold">
-                    {formatter.format(row.total)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant="outline"
-                      className={statusTone[row.status]}
-                    >
-                      {row.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {row.issuedAt}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
 
-          <Separator />
+        <Separator />
 
-          <div
-            ref={sentinelRef}
-            className="text-muted-foreground flex items-center justify-between gap-3 px-4 py-3 text-sm"
-          >
-            <div className="flex items-center gap-2">
-              <ArrowDownIcon className="h-4 w-4" />
-              {hasMore
-                ? "Role até o final para carregar a próxima página."
-                : "Chegamos ao fim da lista."}
-            </div>
-            {isLoading ? (
-              <span className="flex items-center gap-2 font-medium">
-                <LoaderCircle className="h-4 w-4 animate-spin" />
-                Carregando...
-              </span>
-            ) : (
-              <span className="text-xs">
-                {rows.length} carregados · {PAGE_SIZE} por página
-              </span>
-            )}
+        <div
+          ref={sentinelRef}
+          className="text-muted-foreground flex items-center justify-between gap-3 px-4 py-3 text-sm"
+        >
+          <div className="flex items-center gap-2">
+            <ArrowDownIcon className="h-4 w-4" />
+            {hasMore
+              ? "Role até o final para carregar a próxima página."
+              : "Chegamos ao fim da lista."}
           </div>
+          {isLoading ? (
+            <span className="flex items-center gap-2 font-medium">
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+              Carregando...
+            </span>
+          ) : (
+            <span className="text-xs">
+              {rows.length} carregados · {PAGE_SIZE} por página
+            </span>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
