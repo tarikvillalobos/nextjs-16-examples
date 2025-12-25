@@ -2,14 +2,17 @@
 
 import * as React from "react"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { ArrowDownIcon, LoaderCircle } from "lucide-react"
 
 import {
   PAGE_SIZE,
-  getInvoicesPage,
-  totalInvoices,
   type InvoiceRow,
+  getInvoicesFiltered,
+  statusOptions,
+  totalInvoices,
 } from "@/feat/table/data"
 
 const formatter = new Intl.NumberFormat("pt-BR", {
@@ -34,25 +37,41 @@ export function TableInfiniteScroll() {
   const [rows, setRows] = React.useState<InvoiceRow[]>([])
   const [hasMore, setHasMore] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(false)
+  const [query, setQuery] = React.useState("")
+  const [status, setStatus] = React.useState<InvoiceRow["status"] | "Todos">(
+    "Todos"
+  )
+
+  const filteredRows = React.useMemo(
+    () =>
+      getInvoicesFiltered({
+        query,
+        status,
+      }),
+    [query, status]
+  )
 
   const loadNextPage = React.useCallback(() => {
     if (isLoading || !hasMore) return
     setIsLoading(true)
 
-    const { rows: nextRows, hasMore: nextHasMore } = getInvoicesPage(
-      nextPageRef.current,
-      PAGE_SIZE
-    )
+    const start = nextPageRef.current * PAGE_SIZE
+    const slice = filteredRows.slice(start, start + PAGE_SIZE)
 
     nextPageRef.current += 1
-    setRows((prev) => [...prev, ...nextRows])
-    setHasMore(nextHasMore)
+    setRows((prev) => [...prev, ...slice])
+    setHasMore(start + slice.length < filteredRows.length)
     setIsLoading(false)
-  }, [hasMore, isLoading])
+  }, [filteredRows, hasMore, isLoading])
 
   React.useEffect(() => {
+    nextPageRef.current = 0
+    setRows([])
+    setHasMore(true)
+    setIsLoading(false)
+    if (filteredRows.length === 0) return
     loadNextPage()
-  }, [loadNextPage])
+  }, [filteredRows, loadNextPage])
 
   React.useEffect(() => {
     const sentinel = sentinelRef.current
@@ -78,7 +97,9 @@ export function TableInfiniteScroll() {
 
   const loadedPercentage = Math.min(
     100,
-    Math.round((rows.length / totalInvoices) * 100)
+    filteredRows.length === 0
+      ? 0
+      : Math.round((rows.length / filteredRows.length) * 100)
   )
 
   return (
@@ -94,11 +115,46 @@ export function TableInfiniteScroll() {
         <div className="text-muted-foreground flex items-center gap-3 text-sm">
           <div className="rounded-lg border px-3 py-2">
             <div className="text-foreground font-semibold">{rows.length}</div>
-            <div className="text-xs">de {totalInvoices} registros</div>
+            <div className="text-xs">
+              de {filteredRows.length} filtrados ({totalInvoices} totais)
+            </div>
           </div>
           <div className="bg-primary/10 text-primary rounded-lg px-3 py-2 font-semibold">
             {loadedPercentage}%
           </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-card/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Input
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value)
+            }}
+            placeholder="Buscar cliente, e-mail ou NF..."
+            className="pl-3"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={status}
+            onValueChange={(value) => {
+              setStatus(value as InvoiceRow["status"] | "Todos")
+            }}
+          >
+            <SelectTrigger size="sm" aria-label="Filtrar por status">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Todos">Todos os status</SelectItem>
+              {statusOptions.map((item) => (
+                <SelectItem key={item} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

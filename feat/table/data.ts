@@ -151,3 +151,5 @@ export function getInvoicesFiltered(options: {
 }
 
 export const totalInvoices = invoices.length
+export const statusOptions = statuses
+export const countryOptions = countries
